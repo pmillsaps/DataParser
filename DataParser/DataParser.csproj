@@ -1,0 +1,328 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{2428D5E5-DA69-40D5-A8FF-9A9F01199D24}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>DataParser</RootNamespace>
+    <AssemblyName>DataParser</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AutoMapper, Version=8.0.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.8.0.0\lib\net461\AutoMapper.dll</HintPath>
+    </Reference>
+    <Reference Include="ClosedXML, Version=0.94.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ClosedXML.0.94.2\lib\net46\ClosedXML.dll</HintPath>
+    </Reference>
+    <Reference Include="CsvHelper, Version=12.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
+      <HintPath>..\packages\CsvHelper.12.1.2\lib\net45\CsvHelper.dll</HintPath>
+    </Reference>
+    <Reference Include="CsvHelper.Excel, Version=1.0.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CsvHelper.Excel.1.0.6\lib\net40\CsvHelper.Excel.dll</HintPath>
+    </Reference>
+    <Reference Include="DocumentFormat.OpenXml, Version=2.9.1.0, Culture=neutral, PublicKeyToken=8fb06cb64d019a17, processorArchitecture=MSIL">
+      <HintPath>..\packages\DocumentFormat.OpenXml.2.9.1\lib\net46\DocumentFormat.OpenXml.dll</HintPath>
+    </Reference>
+    <Reference Include="ExcelNumberFormat, Version=1.0.3.0, Culture=neutral, PublicKeyToken=23c6f5d73be07eca, processorArchitecture=MSIL">
+      <HintPath>..\packages\ExcelNumberFormat.1.0.3\lib\net20\ExcelNumberFormat.dll</HintPath>
+    </Reference>
+    <Reference Include="FastMember, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\FastMember.1.3.0\lib\net45\FastMember.dll</HintPath>
+    </Reference>
+    <Reference Include="MoreLinq, Version=3.1.0.0, Culture=neutral, PublicKeyToken=384d532d7e88985d, processorArchitecture=MSIL">
+      <HintPath>..\packages\morelinq.3.1.0\lib\net451\MoreLinq.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Diagnostics.Process, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Diagnostics.Process.4.3.0\lib\net461\System.Diagnostics.Process.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.FileSystem.Primitives.4.3.0\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IO.Packaging, Version=4.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Packaging.4.5.0\lib\net46\System.IO.Packaging.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net461\System.ValueTuple.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Extensions.cs" />
+    <Compile Include="Models\ASPN\ASPN_OpenPO.cs" />
+    <Compile Include="Models\ASPN\DPSCMaster.cs" />
+    <Compile Include="Models\ASPN\FinalProcessPlans.cs" />
+    <Compile Include="Models\ASPN\ItemLocationQOH.cs" />
+    <Compile Include="Models\ASPN\ItemMaster.cs" />
+    <Compile Include="Models\ASPN\JobOrderPlanBOM.cs" />
+    <Compile Include="Models\ASPN\JobOrderPlanDPSC.cs" />
+    <Compile Include="Models\ASPN\JobOrderPlanOperations.cs" />
+    <Compile Include="Models\ASPN\JobTransactionsBOM.cs" />
+    <Compile Include="Models\ASPN\JobTransactionsOperation.cs" />
+    <Compile Include="Models\ASPN\OpenPurchaseOrderHeaders.cs" />
+    <Compile Include="Models\ASPN\OpenPurchaseOrderLines.cs" />
+    <Compile Include="Models\ASPN\OpenSalesOrderHeader.cs" />
+    <Compile Include="Models\ASPN\OpenSalesOrderLines.cs" />
+    <Compile Include="Models\ASPN\ProcessPlanBOM.cs" />
+    <Compile Include="Models\ASPN\ProcessPlanHeader.cs" />
+    <Compile Include="Models\ASPN\ProcessPlanOperations.cs" />
+    <Compile Include="Models\ASPN\UOMConvert.cs" />
+    <Compile Include="Models\Epicor\DMT-CUS-Customers.cs" />
+    <Compile Include="Models\ASPN\DMT05CustomerVUKMasterLoad.cs" />
+    <Compile Include="Models\ASPN\Epicor_Sales_Order_CutOverData.cs" />
+    <Compile Include="Models\ASPN\JobOrderPlanHeader.cs" />
+    <Compile Include="Models\ASPN\ASPN_MappingProfile.cs" />
+    <Compile Include="Models\ASPN\OpenARtransactions.cs" />
+    <Compile Include="Models\ASPN\PartMaster.cs" />
+    <Compile Include="Models\ASPN\StandardOperations.cs" />
+    <Compile Include="Models\ASPN\SupplierList.cs" />
+    <Compile Include="Models\ASPN\VUK_OpenPO.cs" />
+    <Compile Include="Models\Epicor\CostAdjustment.cs" />
+    <Compile Include="Models\Epicor\DMT_INV_Part_Combined_Clean.cs" />
+    <Compile Include="Models\Epicor\DMT_INV_Part_Combined.cs" />
+    <Compile Include="Models\Epicor\DMT_BillOfOperations.cs" />
+    <Compile Include="Models\Epicor\IssueMaterial.cs" />
+    <Compile Include="Models\Epicor\Part.cs" />
+    <Compile Include="Models\Epicor\DMT_BillOfMaterial.cs" />
+    <Compile Include="Models\Epicor\PartRevision.cs" />
+    <Compile Include="Models\Epicor\UOM.cs" />
+    <Compile Include="Models\VDK\BOM.cs" />
+    <Compile Include="Models\VE\99-OpenInventoryQtyAdjustmentsWhse_VER.cs" />
+    <Compile Include="Models\VE\APOpenInvoices_VER.cs" />
+    <Compile Include="Models\VE\AROpenInvoices_VER.cs" />
+    <Compile Include="Models\DefaultWhse Bins.cs" />
+    <Compile Include="Models\Epicor\Epicor_APOpenInvoiceLoad.cs" />
+    <Compile Include="Models\Epicor\Epicor_AROpenInvoiceLoad.cs" />
+    <Compile Include="Models\Epicor\FieldServiceJobMaterial.cs" />
+    <Compile Include="Models\Epicor\FieldServiceJobOperation.cs" />
+    <Compile Include="Models\VE\JobCostJobMasterfile.cs" />
+    <Compile Include="Models\VE\JobCostUnbilledWIPv2_VER.cs" />
+    <Compile Include="Models\Epicor\JobHeader.cs" />
+    <Compile Include="Models\Epicor\JobHeaders_Engineered.cs" />
+    <Compile Include="Models\Epicor\JobMaterial.cs" />
+    <Compile Include="Models\Epicor\JobMtlAdjustment.cs" />
+    <Compile Include="Models\Epicor\JobOperation.cs" />
+    <Compile Include="Models\Epicor\JobProd.cs" />
+    <Compile Include="Models\Epicor\JobXRef.cs" />
+    <Compile Include="Models\MappingProfile.cs" />
+    <Compile Include="Models\Epicor\OrderDetail.cs" />
+    <Compile Include="Models\Epicor\OrderHeader.cs" />
+    <Compile Include="Models\VE\OrderHeaders_VER.cs" />
+    <Compile Include="Models\VE\OrderLines_VER.cs" />
+    <Compile Include="Models\Epicor\OrderRelease.cs" />
+    <Compile Include="Models\VE\PurchaseOrderDetail_VER.cs" />
+    <Compile Include="Models\Epicor\POHeader.cs" />
+    <Compile Include="Models\Epicor\QuantityAdjustment.cs" />
+    <Compile Include="Models\Epicor\ServiceCallCombinedData.cs" />
+    <Compile Include="Models\VUK\DMT05CustomerVUKMasterLoad.cs" />
+    <Compile Include="Models\VUK\Epicor_Sales_Order_CutOverData.cs" />
+    <Compile Include="Models\VUK\PartMaster.cs" />
+    <Compile Include="Models\VUK\StandardOperations.cs" />
+    <Compile Include="Models\VUK\SupplierList.cs" />
+    <Compile Include="Models\VUK\VUK_OpenPO.cs" />
+    <Compile Include="Models\VE\V_VE_Customer.cs" />
+    <Compile Include="Models\VE\V_VE_PartPrimWhseBin.cs" />
+    <Compile Include="Models\VE\V_VE_Vendors.cs" />
+    <Compile Include="Models\Epicor\PODetail.cs" />
+    <Compile Include="Models\Epicor\PoRelease.cs" />
+    <Compile Include="Models\Epicor\POHeaderApproval.cs" />
+    <Compile Include="Models\VUK\OpenARtransactions.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Models\VE\PurchaseOrderHeader_VER.cs" />
+    <Compile Include="Unused.cs" />
+    <Compile Include="ASPN.cs" />
+    <Compile Include="VE.cs" />
+    <Compile Include="VDK.cs" />
+    <Compile Include="VUK.cs" />
+    <Compile Include="VUK_Unused.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="Data\ASPN\DMT-CUS-Customers.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\ASPN\DMT-INV-Part_Combined.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\ASPN\UOMConvert.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VDK\DMT-93-Part.xlsx" />
+    <None Include="Data\VDK\DMT-93-Parts.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VE\05-OrderHeaders_VER">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VE\06-OrderLines_VER">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VE\75-APOpenInvoices_VER">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VE\87-AROpenInvoices_VER">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VE\99-JobCostJobMasterfile">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VE\99-JobCostUnbilledWIPv2_VER">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VE\99-OpenInventoryCostAdjustments_VER">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VE\99-OpenInventoryQtyAdjustmentsWhse_VER">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VE\99-OpenInventoryQtyAdjustments_VER">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VE\99-PurchaseOrderDetail_VER">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VE\99-PurchaseOrderHeader">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VE\V_VE_Customer.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VE\V_VE_PartPrimWhseBin.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VE\V_VE_Vendors.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VUK\AllWorkOrderLines.xlsx" />
+    <None Include="Data\VUK\DMT-05-Customer_VUK_Master_Load.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VUK\DMT-05-Customer_VUK_Master_Load.xlsx" />
+    <None Include="Data\VUK\DMT-75-Part_VUK_Master_Load.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VUK\DMT-75-Part_VUK_Master_Load.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VUK\DMT-75-Supplier_Combined.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VUK\DMT-75-Supplier_Combined.xlsx" />
+    <None Include="Data\VUK\DMT-93-Parts.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VUK\DMT-93-Parts.xlsx" />
+    <None Include="Data\VUK\EpicorStdOperations.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VUK\EpicorStdOperations.xlsx" />
+    <None Include="Data\VUK\Epicor_Sales_Order_CutOverData.xlsx" />
+    <None Include="Data\VUK\Epicor_Sales_Order_CutOverData.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VUK\Open AR transactions.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VUK\Open AR transactions.xls" />
+    <None Include="Data\VUK\Open PO%27s.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\VUK\Open PO%27s.xlsx" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="EntityModels\Epicor\" />
+    <Folder Include="Output\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Data\ASPN\DPSCMaster.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\ASPN\FinalProcessPlans.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\ASPN\ItemLocationQOH.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\ASPN\ItemMaster.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\ASPN\JobOrderPlanBOM.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\ASPN\JobOrderPlanDPSC.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\ASPN\JobOrderPlanHeader.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\ASPN\JobOrderPlanOperations.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\ASPN\JobTransactionsBOM.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\ASPN\JobTransactionsOperation.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\ASPN\OpenPurchaseOrderHeaders.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\ASPN\OpenPurchaseOrderLines.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\ASPN\OpenSalesOrderHeader.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\ASPN\OpenSalesOrderLines.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\ASPN\ProcessPlanBOM.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\ASPN\ProcessPlanHeader.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\ASPN\ProcessPlanOperations.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\VUK\IgnoredPO.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
