@@ -25,6 +25,8 @@ namespace DataParser.Models
             //    ;
 
             CreateMap<DMT_INV_Part_Combined, DMT_INV_Part_Combined_Clean>();
+            CreateMap<DMT_INV_Part_Combined_Clean, DMT_INV_Part_Combined>()
+                ;
 
             CreateMap<JobOrderPlanHeader, JobHeader>()
                 .ForMember(dest => dest.Company, opts => opts.MapFrom(src => this.Company))

@@ -16,9 +16,12 @@ namespace DataParser
         private static IMapper mapper { get; set; }
         private static string ErrorList { get; set; }
         private static string MissingParts { get; set; }
+        private static string MissingOperations { get; set; }
         private static string MissingCustomers { get; set; }
         private static string MissingSuppliers { get; set; }
         private static string MissingAdjustments { get; set; }
+        private static string SubContractsUsed { get; set; }
+        private static string FinalProcessPlanErrors { get; set; }
         private static List<string> UOMList { get; set; }
         private static List<UOMConvert> ASPN_UOMConvert { get; set; }
 
@@ -62,6 +65,7 @@ namespace DataParser
         private static List<ProcessPlanOperations> ASPN_ProcessPlanOperations { get; set; }
         private static List<ProcessPlanHeader> ASPN_ProcessPlanHeader { get; set; }
         private static List<ProcessPlanBOM> ASPN_ProcessPlanBOM { get; set; }
+        private static List<DPSCMaster> ASPN_DPSCMaster { get; set; }
         private static List<ItemMaster> ASPN_ItemMaster { get; set; }
         private static List<ItemLocationQOH> ASPN_ItemLocationQOH { get; set; }
         private static List<FinalProcessPlans> ASPN_FinalProcessPlans { get; set; }
@@ -89,12 +93,21 @@ namespace DataParser
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile<ASPN_MappingProfile>();
+                cfg.AllowNullCollections = true;
             });
             mapper = config.CreateMapper();
 
-            DMT_PartCombined = new List<DMT_INV_Part_Combined_Clean>();
             ErrorList = "";
             MissingParts = "";
+            MissingAdjustments = "";
+            MissingCustomers = "";
+            MissingOperations = "";
+            SubContractsUsed = "";
+            MissingSuppliers = "";
+            FinalProcessPlanErrors = "";
+
+            DMT_PartCombined = new List<DMT_INV_Part_Combined_Clean>();
+
             ASPN_UOMConvert = BuildASPN_UOMConvert();
             currentParts = BuildCurrentParts();
             currentCustomers = BuildCurrentCustomers();
@@ -110,7 +123,10 @@ namespace DataParser
             ASPN_ItemMaster = BuildASPN_ItemMaster();
             ASPN_ItemLocationQOH = BuildASPN_ItemLocationQOH();
             ASPN_FinalProcessPlans = BuildASPN_FinalProcessPlans();
+            ASPN_DPSCMaster = BuildASPN_DPSCMaster();
 
+            CheckFinalProcessPlans();
+            WriteErrorText(FinalProcessPlanErrors, "FinalProcessPlanErrors");
             BuildBoo_BOM();
 
             //BuildIgnoredPO();
@@ -176,17 +192,51 @@ namespace DataParser
             //WriteARInvoiceLoad("GLXX-OpenARInvoiceLoad.csv", AROpenInvoiceLoads);
 
             //CreateBatchFile();
-            if (ErrorList.Length > 5) File.WriteAllText(@"Output\ErrorList.txt", ErrorList);
-            if (MissingParts.Length > 5) File.WriteAllText(@"Output\MissingParts.txt", MissingParts);
-            if (!String.IsNullOrEmpty(MissingCustomers) && MissingCustomers.Length > 5) File.WriteAllText(@"Output\MissingCustomers.txt", MissingCustomers);
-            if (!String.IsNullOrEmpty(MissingSuppliers) && MissingSuppliers.Length > 5) File.WriteAllText(@"Output\MissingSuppliers.txt", MissingSuppliers);
-            if (!String.IsNullOrEmpty(MissingAdjustments) && MissingAdjustments.Length > 5) File.WriteAllText(@"Output\MissingAdjustments.txt", MissingAdjustments);
+
+            WriteErrorText(ErrorList, "ErrorList");
+            WriteErrorText(MissingParts, "MissingParts");
+            WriteErrorText(MissingCustomers, "MissingCustomers");
+            WriteErrorText(MissingSuppliers, "MissingSuppliers");
+            WriteErrorText(MissingAdjustments, "MissingAdjustments");
+            WriteErrorText(MissingOperations, "MissingOperations");
+            WriteErrorText(SubContractsUsed, "SubContractsUsed");
+
+            WriteErrorText(MissingCustomers, "MissingCustomers");
 
             #endregion Write Data Files
 
             // Open Output Folder
             //Process.Start(cmd, arg);
             openInExplorer(Path.Combine(Environment.CurrentDirectory, "Output"));
+        }
+
+        private static void CheckFinalProcessPlans()
+        {
+            Console.WriteLine(Extensions.GetCurrentMethod());
+            foreach (var item in ASPN_FinalProcessPlans)
+            {
+                int PPHeader = 0;
+                int PPMaterial = 0;
+                int PPOperation = 0;
+                int PPSC = 0;
+                string validPP = "";
+
+                PPHeader = ASPN_ProcessPlanHeader.Where(x => x.PlanItemNumber == item.PartNum && x.PlanVersion == item.Revision).Count();
+                if (PPHeader == 0 && item.Revision == "NEW") PPHeader = ASPN_ProcessPlanHeader.Where(x => x.PlanItemNumber == item.PartNum && x.PlanVersion == "").Count();
+                PPMaterial = ASPN_ProcessPlanBOM.Where(x => x.PlanItemNumber == item.PartNum && x.PlanVersion == item.Revision).Count();
+                if (PPMaterial == 0 && item.Revision == "NEW") PPMaterial = ASPN_ProcessPlanBOM.Where(x => x.PlanItemNumber == item.PartNum && x.PlanVersion == "").Count();
+                PPOperation = ASPN_ProcessPlanOperations.Where(x => x.PlanItemNumber == item.PartNum && x.PlanVersion == item.Revision).Count();
+                if (PPOperation == 0 && item.Revision == "NEW") PPOperation = ASPN_ProcessPlanOperations.Where(x => x.PlanItemNumber == item.PartNum && x.PlanVersion == "").Count();
+                PPSC = ASPN_DPSCMaster.Where(x => x.ImDscDpScItem == item.PartNum).Count();
+
+                foreach (var header in ASPN_ProcessPlanHeader.Where(x => x.PlanItemNumber == item.PartNum))
+                {
+                    validPP += String.Format("Item: {0} - Rev: {1} | ", header.PlanItemNumber, header.PlanVersion);
+                }
+
+                FinalProcessPlanErrors += String.Format("Item: {0} Rev: {1} Header: {2} Matl: {3} Ops: {4} SC: {5} ValidRevs: {6}", item.PartNum, item.Revision, PPHeader, PPMaterial, PPOperation, PPSC, validPP);
+                FinalProcessPlanErrors += Environment.NewLine;
+            }
         }
 
         private static void BuildBoo_BOM()
@@ -198,11 +248,123 @@ namespace DataParser
             var headers = ASPN_ProcessPlanHeader.Where(x => !x.PlanItemNumber.StartsWith("UB") && !x.PlanItemNumber.StartsWith("W") && !x.PlanItemNumber.StartsWith("S") && !x.ItemDescription.ToUpper().Contains("REBUILD"));
             // Check if we have a PN for the item
             // Will need to filter UB list later
+
             foreach (var item in headers)
             {
+                int strl = 30 - item.PlanItemNumber.Length - item.PlanVersion.Length;
+                Console.Write("\r{0} | {1}{2}", item.PlanItemNumber, item.PlanVersion, new String(' ', strl));
+                bool processthis = true;
                 var final = ASPN_FinalProcessPlans.Any(x => x.PartNum == item.PlanItemNumber && x.Revision == item.PlanVersion);
+                var outerpart = currentParts.Where(x => x.PartNum == item.PlanItemNumber).ToList();
+                if ((item.PlanItemNumber.StartsWith("A") || item.PlanItemNumber.StartsWith("B")) && !final) processthis = false;
+                bool missingop = false;
+                int mtlcount = 0;
+                if (processthis)
+                {
+                    if (String.IsNullOrEmpty(item.PlanVersion))
+                    {
+                        if (outerpart.Count() < 1) item.PlanVersion = "NEW";
+                        if (outerpart.Count() == 1 && outerpart.First().PartRev__RevisionNum != item.PlanVersion) item.PlanVersion = outerpart.First().PartRev__RevisionNum;
+                        if (outerpart.Count() > 1)
+                        {
+                            if (outerpart.Any(x => x.PartRev__RevisionNum != "NEW" && x.PartRev__RevisionNum != ""))
+                            {
+                                item.PlanVersion = outerpart.First(x => x.PartRev__RevisionNum != "NEW" && x.PartRev__RevisionNum != "").PartRev__RevisionNum;
+                            }
+                            else
+                            {
+                                Console.WriteLine("This is a bad situation, as I do not know what rev should be attached here");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (outerpart.FirstOrDefault(x => x.PartRev__RevisionNum == item.PlanVersion) != null)
+                        {
+                            Console.WriteLine("All is good, use the planversion as-is");
+                        }
+                        else
+                        {
+                            Console.WriteLine("We have a problem, we need to add this as a new part revision");
 
-                if (!(item.PlanItemNumber.StartsWith("A") || item.PlanItemNumber.StartsWith("B")) || final)
+                            var uom = ASPN_UOMConvert.First(x => x.Aspen_UOM == item.ManufactUOM);
+                            var newpart = new DMT_INV_Part_Combined_Clean
+                            {
+                                Company = CompanyID,
+                                PartNum = item.PlanItemNumber,
+                                PartDescription = item.ItemDescription,
+                                IUM = uom.Epicor_UOM,
+                                PUM = uom.Epicor_UOM,
+                                SalesUM = uom.Epicor_UOM,
+                                UOMClassID = uom.Epicor_UOMClass,
+                                InActive = "False",
+                                ClassID = "TBD",
+                                ProdCode = "PAR",
+                                CostMethod = "A",
+                                BuyToOrder = "False",
+                                DropShip = "False",
+                                NonStock = "False",
+                                PartPlant__NonStock = "False",
+                                QtyBearing = "True",
+                                PartPlant__QtyBearing = "True",
+                                SearchWord = item.ItemDescription.Substring(0, 8),
+                                TypeCode = "M",
+                                TrackSerialNum = "False",
+                                TrackLots = "False",
+                                PartPlant__Plant = "MfgSys",
+                                PartPlant__PhantomBOM = "False",
+                                PartPlant__PrimWhse = "Duluth",
+                                //PartPlant__VendorNumVendorID = item,
+                                PartWhse__WarehouseCode = "Duluth",
+                                PartWhse__PrimBinNum = "NoBin",
+                                PartRev__RevisionNum = item.PlanVersion.NonBlankValueOf(),
+                                PartRev__RevShortDesc = item.PlanVersion.NonBlankValueOf(),
+                                PartRev__RevDescription = item.PlanVersion.NonBlankValueOf(),
+                                PartRev__Approved = "True",
+                                PartRev__ApprovedBy = "manager",
+                                PartRev__ApprovedDate = "01/01/2019",
+                                PartRev__EffectiveDate = "01/01/2000",
+                                SNBaseDataType = "",
+                                PartPlant__SNBaseDataType = "",
+                                PhantomBOM = "False",
+                                VendGrup_c = "",
+                                CommentText = "",
+                                c_MTO_c = "",
+                                HoseBuild_c = "",
+                                HoseEndOne_c = "",
+                                HoseEndTwo_c = "",
+                                HoseRawMtl_c = "",
+                                PartsPDF_c = "",
+                                LiftFamily_c = "",
+                                HoseWrap_c = "",
+                                Type_c = "",
+                                RefDesignator_c = "",
+                                PartPlant__GenerateSugg = "True",
+                                PartPlant__ProcessMRP = "True",
+                                PartPlant__VendorNumVendorID = "",
+                                PartWhse__ManualABC = "False",
+                                PartWhse__SystemABC = "",
+
+                                //HoseBuild_c = "",
+                                //CommentText = aspn_part.Cost_Dec,
+                            };
+                            if (final) newpart.ProdCode = "INS";
+
+                            if (ASPN_ItemLocationQOH.Any(x => x.ItemNumber == newpart.PartNum))
+                            {
+                                var locqoh = ASPN_ItemLocationQOH.First(x => x.ItemNumber == newpart.PartNum);
+                                newpart.PartWhse__PrimBinNum = locqoh.Location;
+                                newpart.UnitPrice = locqoh.Avgcost;
+                            }
+                            if (!DMT_PartCombined.Any(x => x.PartNum == newpart.PartNum && x.PartRev__RevisionNum == newpart.PartRev__RevisionNum)) DMT_PartCombined.Add(newpart);
+                            //DMT_INV_Part_Combined newpart2 = mapper.Map<DMT_INV_Part_Combined_Clean, DMT_INV_Part_Combined>(newpart);
+
+                            if (!currentParts.Any(x => x.PartNum == newpart.PartNum && x.PartRev__RevisionNum == newpart.PartRev__RevisionNum)) currentParts.Add(mapper.Map<DMT_INV_Part_Combined_Clean, DMT_INV_Part_Combined>(newpart));
+                        }
+                    }
+                }
+
+                if (processthis)
                 {
                     //if (String.IsNullOrEmpty(item.PlanVersion)) item.PlanVersion = "NEW";
 
@@ -210,6 +372,7 @@ namespace DataParser
                     {
                         if (ASPN_ItemMaster.Any(x => x.Itemkey == item.PlanItemNumber))
                         {
+                            //var aspn_parts = ASPN_ItemMaster.Where(x => x.Itemkey == item.PlanItemNumber);
                             var aspn_part = ASPN_ItemMaster.First(x => x.Itemkey == item.PlanItemNumber);
                             if (String.IsNullOrEmpty(aspn_part.TransUOM)) aspn_part.TransUOM = "EA";
 
@@ -291,36 +454,97 @@ namespace DataParser
                         }
                     }
 
-                    var planops = ASPN_ProcessPlanOperations.Where(x => x.PlanItemNumber == item.PlanItemNumber && x.PlanVersion == item.PlanVersion && x.SeqDetailType != "W");
-                    foreach (var op in planops)
+                    var planops = ASPN_ProcessPlanOperations.Where(x => x.PlanItemNumber == item.PlanItemNumber && x.PlanVersion == item.PlanVersion && x.SeqDetailType != "W").ToList();
+                    if (planops.Count() == 0) planops = ASPN_ProcessPlanOperations.Where(x => x.PlanItemNumber == item.PlanItemNumber && x.PlanVersion == "" && x.SeqDetailType != "W").ToList();
+                    if (planops.Count() == 0)
                     {
-                        var OP = new DMT_BillOfOperations
+                        // check for subcontract
+                        if (ASPN_DPSCMaster.Any(x => x.ImDscDpScItem == item.PlanItemNumber))
                         {
-                            Company = CompanyID,
-                            PartNum = op.PlanItemNumber,
-                            ECOGroupID = "PEM",
-                            QtyPer = 1,
-                            RevisionNum = op.PlanVersion.NonBlankValueOf(),
-                            StdFormat = "HP",
-                            LaborEntryMethod = "T",
-                            SchedRelation = "FS",
-                            OpCode = op.WCLabActivty,
-                            OprSeq = ConvertOprSeq(op.OpSequence),
-                            ProdStandard = op.RunTime,
-                            EstProdHours = op.RunTime,
-                            EstSetHours = op.SetupTimeInHrs,
-                            ECOOpDtl__ResourceGrpID = op.WCLabActivty,
-                        };
+                            var dpsc = ASPN_DPSCMaster.Where(x => x.ImDscDpScItem == item.PlanItemNumber);
+                            if (dpsc.Count() > 1)
+                            {
+                                Console.WriteLine("Multiple DPSC records - look into this one.");
+                            }
+                            else
+                            {
+                                var dpscitem = dpsc.First();
+                                var OP = new DMT_BillOfOperations
+                                {
+                                    Company = CompanyID,
+                                    PartNum = dpscitem.ImDscDpScItem,
+                                    RevisionNum = item.PlanVersion.NonBlankValueOf(),
+                                    OprSeq = 1,
+                                    OpCode = dpscitem.ImDscPrimeVendor,
+                                    ECOOpDtl__ResourceGrpID = dpscitem.ImDscPrimeVendor,
+                                    QtyPer = 1,
+                                    StdFormat = "HP",
+                                    LaborEntryMethod = "T",
+                                    SchedRelation = "FS",
+                                    ProdStandard = dpscitem.ImDscLeadDaysBuffer,
+                                    EstProdHours = dpscitem.ImDscLeadDaysBuffer,
+                                    EstSetHours = 0,
+                                    ECOGroupID = "PEM",
+                                };
 
-                        //if (String.IsNullOrEmpty(OP.RevisionNum)) OP.RevisionNum = "NEW";
+                                //if (!String.IsNullOrEmpty(item.PlanVersion)) OP.RevisionNum = item.PlanVersion;
 
-                        dmt_BOO.Add(OP);
+                                //if (String.IsNullOrEmpty(OP.RevisionNum)) OP.RevisionNum = "NEW";
+
+                                dmt_BOO.Add(OP);
+
+                                var submsg = String.Format("SUB : {0}", OP.OpCode);
+
+                                if (!SubContractsUsed.Contains(submsg))
+                                {
+                                    SubContractsUsed += submsg;
+                                    SubContractsUsed += Environment.NewLine;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            missingop = true;
+                        }
+                    }
+                    else
+                    {
+                        foreach (var op in planops)
+                        {
+                            var OP = new DMT_BillOfOperations
+                            {
+                                Company = CompanyID,
+                                PartNum = op.PlanItemNumber,
+                                ECOGroupID = "PEM",
+                                QtyPer = 1,
+                                RevisionNum = op.PlanVersion.NonBlankValueOf(),
+                                StdFormat = "HP",
+                                LaborEntryMethod = "T",
+                                SchedRelation = "FS",
+                                OpCode = op.WCLabActivty,
+                                OprSeq = ConvertOprSeq(op.OpSequence),
+                                ProdStandard = op.RunTime,
+                                EstProdHours = op.RunTime,
+                                EstSetHours = op.SetupTimeInHrs,
+                                ECOOpDtl__ResourceGrpID = op.WCLabActivty,
+                            };
+
+                            if (!String.IsNullOrEmpty(item.PlanVersion)) OP.RevisionNum = item.PlanVersion;
+
+                            //if (String.IsNullOrEmpty(OP.RevisionNum)) OP.RevisionNum = "NEW";
+
+                            dmt_BOO.Add(OP);
+                        }
                     }
 
                     // placed filter to make sure I do not add a BOM for the root part
-                    var planBOM = ASPN_ProcessPlanBOM.Where(x => x.PlanItemNumber == item.PlanItemNumber && x.ComponentItemNumber != item.PlanItemNumber);
+                    var planBOM = ASPN_ProcessPlanBOM.Where(x => x.PlanItemNumber == item.PlanItemNumber && x.ComponentItemNumber != item.PlanItemNumber && x.PlanVersion == item.PlanVersion).ToList();
+                    if (planBOM.Count() < 1) planBOM = ASPN_ProcessPlanBOM.Where(x => x.PlanItemNumber == item.PlanItemNumber && x.ComponentItemNumber != item.PlanItemNumber).ToList();
+                    mtlcount = planBOM.Count();
+
                     foreach (var mtl in planBOM)
                     {
+                        if (String.IsNullOrEmpty(mtl.PlanVersion)) mtl.PlanVersion = item.PlanVersion;
                         if (!currentParts.Any(x => x.PartNum == mtl.ComponentItemNumber))
                         {
                             if (ASPN_ItemMaster.Any(x => x.Itemkey == mtl.ComponentItemNumber))
@@ -453,6 +677,12 @@ namespace DataParser
                         }
                     }
                 }
+
+                if (missingop)
+                {
+                    MissingOperations += String.Format("Process Plan Item:{0} | {1} | {2} - has no operations in the Ndustrious data - with {3} lines of material", item.PlanItemNumber, item.PlanVersion, item.ItemDescription, mtlcount);
+                    MissingOperations += Environment.NewLine;
+                }
             }
 
             dmt_BOM = ResequenceBOM(dmt_BOM);
@@ -471,7 +701,7 @@ namespace DataParser
                 {
                     sequence = 10;
                     holdPart = testPart;
-                    Console.WriteLine("ReSequencing {0} - {1}", item.PartNum, item.RevisionNum);
+                    Console.Write("\rReSequencing {0} - {1}                        ", item.PartNum, item.RevisionNum);
                 }
 
                 item.MtlSeq = sequence;
@@ -656,6 +886,32 @@ namespace DataParser
             return list;
         }
 
+        private static List<DPSCMaster> BuildASPN_DPSCMaster()
+        {
+            Console.WriteLine(Extensions.GetCurrentMethod());
+            var filePath = Path.Combine(Environment.CurrentDirectory, "Data", CompanyID, "DPSCMaster.txt");
+            filePath = FixASPNFileHeader(filePath);
+
+            StreamReader textreader = new StreamReader(filePath);
+            var csv = new CsvReader(textreader);
+            // Turn off.
+            csv.Configuration.IgnoreBlankLines = true;
+            csv.Configuration.HasHeaderRecord = true;
+            //csv.Configuration.Delimiter = ";";
+            csv.Configuration.BadDataFound = null;
+            csv.Configuration.Quote = '\'';
+            csv.Configuration.MissingFieldFound = null;
+            var list = csv.GetRecords<DPSCMaster>().ToList();
+            foreach (var item in list.Where(item => item.ImDscDpScItem.StartsWith(".")).Select(item => item))
+            {
+                item.ImDscDpScItem = item.ImDscDpScItem.Substring(1);
+            }
+
+            csv.Dispose();
+            textreader.Close();
+            return list;
+        }
+
         private static List<ProcessPlanHeader> BuildASPN_ProcessPlanHeader()
         {
             Console.WriteLine(Extensions.GetCurrentMethod());
@@ -800,6 +1056,7 @@ namespace DataParser
             // Turn off.
             csv.Configuration.IgnoreBlankLines = true;
             csv.Configuration.HasHeaderRecord = true;
+            csv.Configuration.TrimOptions = CsvHelper.Configuration.TrimOptions.Trim;
             //csv.Configuration.Delimiter = ";";
             csv.Configuration.BadDataFound = null;
             //csv.Configuration.Quote = '\'';
@@ -889,6 +1146,7 @@ namespace DataParser
             //csv.Configuration.Delimiter = ";";
             csv.Configuration.BadDataFound = null;
             var list = csv.GetRecords<DMT_INV_Part_Combined>().OrderBy(x => x.PartNum).ToList();
+
             csv.Dispose();
             textreader.Close();
             return list;
@@ -925,7 +1183,7 @@ namespace DataParser
                 if (pohead == null) // Only add the PO Header if it does not yet exist
                 {
                     polinenum = 1;  // Reset line number for a new PO
-                    //var head = poheads.First(x => x.PurchaseOrderNo == item.OldPO);
+                                    //var head = poheads.First(x => x.PurchaseOrderNo == item.OldPO);
                     var vendor = currentVendors.FirstOrDefault(x => x.OldVendorID_c == item.Supplier);
                     if (vendor == null)
                     {
@@ -1127,7 +1385,7 @@ namespace DataParser
             foreach (var item in currentJobs)
             {
                 int orderNum = 0;
-                Console.WriteLine(itemcount++);
+                Console.Write("\r {0}           ", itemcount++);
 
                 if (item.JobNumber.StartsWith("S/N"))
                 {
@@ -1461,7 +1719,7 @@ namespace DataParser
                 };
 
                 EpicorQuantityAdjustments.Add(adjust);
-
+                return;
                 //if (item.LiftRecd.ToUpper() != "YES" && !String.IsNullOrEmpty(item.Lift))
                 //{
                 //    // Lift not here or lift here and not invoiced
@@ -2178,6 +2436,8 @@ namespace DataParser
 
         private static void WriteDMTBOM(string fileName, List<DMT_BillOfMaterial> data)
         {
+            foreach (var item in data.Where(item => item.RevisionNum == "~").Select(item => item)) item.RevisionNum = "NEW1";
+
             StreamWriter textwriter = new StreamWriter(SubFolder + fileName);
             var csvout = new CsvWriter(textwriter);
             csvout.WriteHeader<DMT_BillOfMaterial>();
@@ -2191,6 +2451,7 @@ namespace DataParser
 
         private static void WriteDMTBOO(string fileName, List<DMT_BillOfOperations> data)
         {
+            foreach (var item in data.Where(item => item.RevisionNum == "~").Select(item => item)) item.RevisionNum = "NEW1";
             StreamWriter textwriter = new StreamWriter(SubFolder + fileName);
             var csvout = new CsvWriter(textwriter);
             csvout.WriteHeader<DMT_BillOfOperations>();
@@ -2204,6 +2465,7 @@ namespace DataParser
 
         private static void WriteDMTInvPartCombined(string fileName, List<DMT_INV_Part_Combined_Clean> data)
         {
+            foreach (var item in data.Where(item => item.PartRev__RevisionNum == "~").Select(item => item)) item.PartRev__RevisionNum = "NEW1";
             //List<DMT_INV_Part_Combined_Clean> output = new List<DMT_INV_Part_Combined_Clean>();
             //output = mapper.Map<List<DMT_INV_Part_Combined>, List<DMT_INV_Part_Combined_Clean>>(data);
             StreamWriter textwriter = new StreamWriter(SubFolder + fileName);
@@ -2216,6 +2478,12 @@ namespace DataParser
             textwriter.Close();
 
             FixHeaderForDataFile(fileName);
+        }
+
+        private static void WriteErrorText(string data, string filename)
+        {
+            string outfile = String.Format(@"Output\{0}.txt", filename);
+            if (!String.IsNullOrEmpty(data) && data.Length > 5) File.WriteAllText(outfile, data);
         }
 
         #endregion Write Data Files

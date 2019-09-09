@@ -17,7 +17,7 @@ namespace DataParser.Models.ASPN
         public string ImDscCostMask { get; set; }
         public string ImDscStatus { get; set; }
         public string ImDscLeadTimCriteria { get; set; }
-        public string ImDscLeadDaysBuffer { get; set; }
+        public double ImDscLeadDaysBuffer { get; set; }
         public string ImDscPONotes { get; set; }
     }
 }

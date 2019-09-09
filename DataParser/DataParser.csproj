@@ -269,6 +269,7 @@
     <Folder Include="Output\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Data\ASPN\CustomerAccounts.txt" />
     <Content Include="Data\ASPN\DPSCMaster.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -296,6 +297,7 @@
     <Content Include="Data\ASPN\JobTransactionsBOM.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Data\ASPN\JobTransactionsDPSC.txt" />
     <Content Include="Data\ASPN\JobTransactionsOperation.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -320,6 +322,8 @@
     <Content Include="Data\ASPN\ProcessPlanOperations.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Data\ASPN\VendorAccounts.txt" />
+    <Content Include="Data\ASPN\VendorPriceList.txt" />
     <Content Include="Data\VUK\IgnoredPO.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
